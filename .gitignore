@@ -1,0 +1,11 @@
+# Object files
+*.o
+
+# Static libraries
+*.a
+
+# Dynamic libraries
+*.so
+
+# Distribution files
+dist/
