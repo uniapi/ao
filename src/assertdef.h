@@ -1,8 +1,8 @@
-/*************************************************************************
-                          Written by Ali Muhammed
-                            uniapi@outlook.com
-                            September 23, 2018
-*************************************************************************/
+/*
+ * Copyright (c) 2018 Asserter. All rights reserved.
+ *         Use is subject to license terms.
+ *            See LICENSE for details.
+ */
 
 #ifndef _ASSERTDEF_H
 #define _ASSERTDEF_H
