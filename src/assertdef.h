@@ -50,6 +50,7 @@ typedef unsigned int size_t;
 enum { FALSE, TRUE };
 
 #endif	/* _BOOLDEF_H */
+
 typedef struct _assertlog {
 	assertinc inc;
 	size_t nlog;
@@ -100,5 +101,11 @@ typedef struct _assertlog {
 /* (integral integral -> assertop) */
 #define __assert_skip_eq(actual, expected) \
 	((actual) != (expected) ? ASSERT_SKIP : ASSERT_PASS)
+
+/* (integral integral mode -> assertop) */
+#define __assert_cmp(actual, expected, mode)
+
+/* (integral integral mode -> assertop) */
+#define __assert_skip_cmp(actual, expected, mode)
 
 #endif 	/* _ASSERTDEF_H */
