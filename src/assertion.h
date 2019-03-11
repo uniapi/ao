@@ -85,4 +85,43 @@ extern assertop assert_mem_skip_eq_r(asserter *, const void *, const void *, siz
 extern assertop assert_list_skip_eq_r(asserter *, const void *, const void *,
 	int (*)(const void *, const void *), void *(*)(const void *));
 
+/*
+ * Assertions using comparison modes
+ *
+ * Note:
+ *    use assert_expr() for integral data types
+ */
+
+extern assertop assert_flt_cmp(float, float, float, float, assertmode);
+extern assertop assert_dbl_cmp(double, double, double, double, assertmode);
+extern assertop assert_str_cmp(const char *, const char *, assertmode);
+extern assertop assert_mem_cmp(const void *, const void *, size_t, size_t, assertmode);
+extern assertop assert_list_cmp(const void *, const void *,
+	int (*)(const void *, const void *), void *(*)(const void *), assertmode);
+
+extern assertop assert_flt_skip_cmp(float, float, float, float, assertmode);
+extern assertop assert_dbl_skip_cmp(double, double, double, double, assertmode);
+extern assertop assert_str_skip_cmp(const char *, const char *, assertmode);
+extern assertop assert_mem_skip_cmp(const void *, const void *, size_t, size_t, assertmode);
+extern assertop assert_list_skip_cmp(const void *, const void *,
+	int (*)(const void *, const void *), void *(*)(const void *), assertmode);
+
+/***** Thread-Safe *****/
+
+extern assertop assert_flt_cmp_r(asserter *, float, float, float, float, assertmode);
+extern assertop assert_dbl_cmp_r(asserter *, double, double, double, double, assertmode);
+extern assertop assert_str_cmp_r(asserter *, const char *, const char *, assertmode);
+extern assertop assert_mem_cmp_r(asserter *, const void *, const void *, size_t, size_t,
+	assertmode);
+extern assertop assert_list_cmp_r(asserter *, const void *, const void *,
+	int (*)(const void *, const void *), void *(*)(const void *), assertmode);
+
+extern assertop assert_flt_skip_cmp_r(asserter *, float, float, float, float, assertmode);
+extern assertop assert_dbl_skip_cmp_r(asserter *, double, double, double, double, assertmode);
+extern assertop assert_str_skip_cmp_r(asserter *, const char *, const char *, assertmode);
+extern assertop assert_mem_skip_cmp_r(asserter *, const void *, const void *, size_t, size_t,
+	assertmode);
+extern assertop assert_list_skip_cmp_r(asserter *, const void *, const void *,
+	int (*)(const void *, const void *), void *(*)(const void *), assertmode);
+
 #endif 	/*_ASSERTION_H */

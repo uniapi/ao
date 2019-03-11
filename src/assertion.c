@@ -74,7 +74,7 @@ assertop assert_flt_eq(float actual, float expected, float reltol, float abstol)
 			tol = abstol;
 		aop = fabsf(actual - expected) < tol ? ASSERT_PASS : ASSERT_FAIL;
 	}
-	asserter_mode_log(aop);
+	return asserter_mode_log(aop);
 }
 
 assertop assert_dbl_eq(double actual, double expected, double reltol, double abstol)
@@ -90,7 +90,7 @@ assertop assert_dbl_eq(double actual, double expected, double reltol, double abs
 			tol = abstol;
 		aop = fabs(actual - expected) < tol ? ASSERT_PASS : ASSERT_FAIL;
 	}
-	asserter_mode_log(aop);
+	return asserter_mode_log(aop);
 }
 
 assertop assert_str_eq(const char *actual, const char *expected)
@@ -196,7 +196,7 @@ assertop assert_flt_skip_eq(float actual, float expected, float reltol, float ab
 			tol = abstol;
 		aop = fabsf(actual - expected) < tol ? ASSERT_PASS : ASSERT_SKIP;
 	}
-	asserter_mode_log(aop);
+	return asserter_mode_log(aop);
 }
 
 assertop assert_dbl_skip_eq(double actual, double expected, double reltol, double abstol)
@@ -212,7 +212,7 @@ assertop assert_dbl_skip_eq(double actual, double expected, double reltol, doubl
 			tol = abstol;
 		aop = fabs(actual - expected) < tol ? ASSERT_PASS : ASSERT_SKIP;
 	}
-	asserter_mode_log(aop);
+	return asserter_mode_log(aop);
 }
 
 assertop assert_str_skip_eq(const char *actual, const char *expected)
@@ -320,7 +320,7 @@ assertop assert_flt_eq_r(asserter *ar, float actual, float expected, float relto
 			tol = abstol;
 		aop = fabsf(actual - expected) < tol ? ASSERT_PASS : ASSERT_FAIL;
 	}
-	asserter_mode_log_r(ar, aop);
+	return asserter_mode_log_r(ar, aop);
 }
 
 assertop assert_dbl_eq_r(asserter *ar, double actual, double expected, double reltol, double abstol)
@@ -336,7 +336,7 @@ assertop assert_dbl_eq_r(asserter *ar, double actual, double expected, double re
 			tol = abstol;
 		aop = fabs(actual - expected) < tol ? ASSERT_PASS : ASSERT_FAIL;
 	}
-	asserter_mode_log_r(ar, aop);
+	return asserter_mode_log_r(ar, aop);
 }
 
 assertop assert_str_eq_r(asserter *ar, const char *actual, const char *expected)
@@ -442,7 +442,7 @@ assertop assert_flt_skip_eq_r(asserter *ar, float actual, float expected, float 
 			tol = abstol;
 		aop = fabsf(actual - expected) < tol ? ASSERT_PASS : ASSERT_SKIP;
 	}
-	asserter_mode_log_r(ar, aop);
+	return asserter_mode_log_r(ar, aop);
 }
 
 assertop assert_dbl_skip_eq_r(asserter *ar, double actual, double expected, double reltol, double abstol)
@@ -458,7 +458,7 @@ assertop assert_dbl_skip_eq_r(asserter *ar, double actual, double expected, doub
 			tol = abstol;
 		aop = fabs(actual - expected) < tol ? ASSERT_PASS : ASSERT_SKIP;
 	}
-	asserter_mode_log_r(ar, aop);
+	return asserter_mode_log_r(ar, aop);
 }
 
 assertop assert_str_skip_eq_r(asserter *ar, const char *actual, const char *expected)
@@ -494,4 +494,190 @@ assertop assert_list_skip_eq_r(asserter *ar, const void *actual, const void *exp
 		expected = nxt(expected);
 	}
 	return asserter_mode_log_r(ar, ASSERT_PASS);
+}
+
+
+/*
+ * Assertions using comparison modes
+ */
+
+assertop assert_flt_cmp(float actual, float expected, float reltol, float abstol, assertmode mode)
+{
+	/*
+	 * Do: supply implementation!
+	 */
+#error "Unsupplied Implementation!"
+}
+
+assertop assert_dbl_cmp(double actual, double expected, double reltol, double abstol,
+	assertmode mode)
+{
+	/*
+	 * Do: supply implementation!
+	 */
+#error "Unsupplied Implementation!"
+}
+
+assertop assert_str_cmp(const char *actual, const char *expected, assertmode mode)
+{
+	/*
+	 * Do: supply implementation!
+	 */
+#error "Unsupplied Implementation"
+}
+
+assertop assert_mem_cmp(const void *actual, const void *expected, size_t n, size_t size,
+	assertmode mode)
+{
+	/*
+	 * Do: supply implementation!
+	 */
+#error "Unsupplied Implementation"
+}
+
+assertop assert_list_cmp(const void *actual, const void *expected,
+	int (*cmp)(const void *, const void *), void *(*nxt)(const void *), assertmode mode)
+{
+	/*
+	 * Do: supply implementation!
+	 */
+#error "Unsupplied Implementation"
+
+}
+
+assertop assert_flt_skip_cmp(float actual, float expected, float reltol, float abstol,
+	assertmode mode)
+{
+	/*
+	 * Do: supply implementation!
+	 */
+#error "Unsupplied Implementation!"
+}
+
+assertop assert_dbl_skip_cmp(double actual, double expected, double reltol, double abstol,
+	assertmode mode)
+{
+	/*
+	 * Do: supply implementation!
+	 */
+#error "Unsupplied Implementation!"
+}
+
+assertop assert_str_skip_cmp(const char *actual, const char *expected, assertmode mode)
+{
+	/*
+	 * Do: supply implementation!
+	 */
+#error "Unsupplied Implementation"
+}
+
+assertop assert_mem_skip_cmp(const void *actual, const void *expected, size_t n, size_t size,
+	assertmode mode)
+{
+	/*
+	 * Do: supply implementation!
+	 */
+#error "Unsupplied Implementation"
+}
+
+assertop assert_list_skip_cmp(const void *actual, const void *expected,
+	int (*cmp)(const void *, const void *), void *(*nxt)(const void *), assertmode mode)
+{
+	/*
+	 * Do: supply implementation!
+	 */
+#error "Unsupplied Implementation"
+
+}
+
+/***** Thread-Safe *****/
+
+assertop assert_flt_cmp_r(asserter *ar, float actual, float expected, float reltol, float abstol,
+	assertmode mode)
+{
+	/*
+	 * Do: supply implementation!
+	 */
+#error "Unsupplied Implementation!"
+}
+
+assertop assert_dbl_cmp_r(asserter *ar, double actual, double expected, double reltol, double abstol,
+	assertmode mode)
+{
+	/*
+	 * Do: supply implementation!
+	 */
+#error "Unsupplied Implementation!"
+}
+
+assertop assert_str_cmp_r(asserter *ar, const char *actual, const char *expected, assertmode mode)
+{
+	/*
+	 * Do: supply implementation!
+	 */
+#error "Unsupplied Implementation"
+}
+
+assertop assert_mem_cmp_r(asserter *ar, const void *actual, const void *expected, size_t n, size_t size,
+	assertmode mode)
+{
+	/*
+	 * Do: supply implementation!
+	 */
+#error "Unsupplied Implementation"
+}
+
+assertop assert_list_cmp_r(asserter *ar, const void *actual, const void *expected,
+	int (*cmp)(const void *, const void *), void *(*nxt)(const void *), assertmode mode)
+{
+	/*
+	 * Do: supply implementation!
+	 */
+#error "Unsupplied Implementation"
+
+}
+
+assertop assert_flt_skip_cmp_r(asserter *ar, float actual, float expected, float reltol, float abstol,
+	assertmode mode)
+{
+	/*
+	 * Do: supply implementation!
+	 */
+#error "Unsupplied Implementation!"
+}
+
+assertop assert_dbl_skip_cmp_r(asserter *ar, double actual, double expected, double reltol, double abstol,
+	assertmode mode)
+{
+	/*
+	 * Do: supply implementation!
+	 */
+#error "Unsupplied Implementation!"
+}
+
+assertop assert_str_skip_cmp_r(asserter *ar, const char *actual, const char *expected, assertmode mode)
+{
+	/*
+	 * Do: supply implementation!
+	 */
+#error "Unsupplied Implementation"
+}
+
+assertop assert_mem_skip_cmp_r(asserter *ar, const void *actual, const void *expected, size_t n, size_t size,
+	assertmode mode)
+{
+	/*
+	 * Do: supply implementation!
+	 */
+#error "Unsupplied Implementation"
+}
+
+assertop assert_list_skip_cmp_r(asserter *ar, const void *actual, const void *expected,
+	int (*cmp)(const void *, const void *), void *(*nxt)(const void *), assertmode mode)
+{
+	/*
+	 * Do: supply implementation!
+	 */
+#error "Unsupplied Implementation"
+
 }
