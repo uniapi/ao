@@ -1,0 +1,305 @@
+'\" te
+.\" بسم الله
+.\" Copyright (c) 2022, Asserter, Org. All Rights Reserved.
+.TH aopf.h 3HEAD "Jul 2022" "SunOS 5.11" "Headers"
+.SH NAME
+aopf.h, aopf \- assert operation formatted
+.SH SYNOPSIS
+.LP
+.nf
+\fB#include <ao/aopf.h>\fR
+.fi
+
+.SH DESCRIPTION
+.sp
+.LP
+The \fB<ao/aopf.h>\fR header defines the following macros as string constants that are used as format specifiers of \fBaopf_xx()\fR functions for printing \fIexpected\fR and \fIactual\fR values and that can be safely redifined while compiling:
+.sp
+.ne 2
+.mk
+.na
+\fBAOPF_CHAR_SP\fR
+.ad
+.sp .6
+.RS 20n
+.rt
+%4d
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBAOPF_SHRT_SP\fR
+.ad
+.sp .6
+.RS 20n
+.rt
+%hd
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBAOPF_INT_SP\fR
+.ad
+.sp .6
+.RS 20n
+.rt
+%d
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBAOPF_LONG_SP\fR
+.ad
+.sp .6
+.RS 20n
+.rt
+%ld
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBAOPF_LLONG_SP\fR
+.ad
+.sp .6
+.RS 20n
+.rt
+%lld
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBAOPF_UCHAR_SP\fR
+.ad
+.sp .6
+.RS 20n
+.rt
+%3u
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBAOPF_USHRT_SP\fR
+.ad
+.sp .6
+.RS 20n
+.rt
+%hu
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBAOPF_UINT_SP\fR
+.ad
+.sp .6
+.RS 20n
+.rt
+%u
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBAOPF_ULONG_SP\fR
+.ad
+.sp .6
+.RS 20n
+.rt
+%lu
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBAOPF_ULLONG_SP\fR
+.ad
+.sp .6
+.RS 20n
+.rt
+%llu
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBAOPF_SIZE_SP\fR
+.ad
+.sp .6
+.RS 20n
+.rt
+%zu
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBAOPF_FLT_SP\fR
+.ad
+.sp .6
+.RS 20n
+.rt
+%.9lf
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBAOPF_DBL_SP\fR
+.ad
+.sp .6
+.RS 20n
+.rt
+%.17lf
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBAOPF_LDBL_SP\fR
+.ad
+.sp .6
+.RS 20n
+.rt
+%.21Lf
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBAOPF_FP_EXTRA_SP\fR
+.ad
+.sp .6
+.RS 20n
+.rt
+%a
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBAOPF_PTR_SP\fR
+.ad
+.sp .6
+.RS 20n
+.rt
+%p
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBAOPF_STR_SP\fR
+.ad
+.sp .6
+.RS 20n
+.rt
+"%s"
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBAOPF_MEM_SP\fR
+.ad
+.sp .6
+.RS 20n
+.rt
+%02X
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBAOPF_MEM_LINE_SZ\fR
+.ad
+.sp .6
+.RS 20n
+.rt
+16
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBAOPF_MSGHDR_FAIL\fR
+.ad
+.sp .6
+.RS 20n
+.rt
+"> Assertion Failed <"
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBAOPF_MSGHDR_SKIP\fR
+.ad
+.sp .6
+.RS 20n
+.rt
+"> Assertion Skipped <"
+.RE
+
+.sp
+.LP
+The \fBAOPF_FP_EXTRA_SP\fR macro can be safely set to an empty string "" while compiling if an extra format for floating-point numbers is not needed.
+
+.SH ATTRIBUTES
+.sp
+.LP
+See \fBattributes\fR(5) for descriptions of the following attributes:
+.sp
+
+.sp
+.TS
+tab(@) box;
+cw(2.75i) |cw(2.75i)
+lw(2.75i) |lw(2.75i)
+.
+ATTRIBUTE TYPE@ATTRIBUTE VALUE
+_
+Interface Stability@Committed
+_
+MT-Level@Safe
+_
+Standard@None
+.TE
+
+.SH SEE ALSO
+.sp
+.LP
+\fBaopf_eq\fR(3C), \fBaopf_expr\fR(3C), \fBaopf_cmp\fR(3C), \fBaopf_eqskp\fR(3C), \fBaopf_exprskp\fR(3C), \fBaopf_cmpskp\fR(3C), \fBaop.h\fR(3HEAD), \fBao.h\fR(3HEAD)
+
+.SH AUTHOR
+Written by Ali Muhammed <uniapi@outlook.com>
+.SH COPYRIGHT
+Copyright (c) 2022 Asserter, Org.
+.PP
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the Open Software License ("\s-1OSL\s0"), Version 3.0

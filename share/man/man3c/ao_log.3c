@@ -1,0 +1,68 @@
+'\" te
+.\" بسم الله
+.\" Copyright (c) 2022, Asserter, Org. All Rights Reserved.
+.TH ao_log 3c "7 Jul 2022" "SunOS 5.11" "C Library Functions"
+.SH NAME
+ao_log \- assert operator log
+.SH SYNOPSIS
+.LP
+.nf
+#include <ao/ao.h>
+
+\fBaop_t\fR \fBao_log\fR(\fBaop_t\fR \fIaop\fR, \fBao_t *\fR\fIao\fR);
+.fi
+
+.SH DESCRIPTION
+.sp
+.LP
+The \fBao_log()\fR function is provided for custom logging of assert operations for situations the default assert operator logging is not enough or inappropriate. Otherwise, it should not be used as assert operator performs logging automatically.
+
+.sp
+.LP
+To enable custom logging the assert operator field \fIinc\fR should be set to \fBAOINC_NONE\fR.
+
+.sp
+.LP
+The \fIaop\fR argument is an assert operation value to log. The \fIao\fR argument is an \fBao_t\fR type pointer.
+.sp
+.LP
+See \fBao.h\fR(3HEAD) for more details about the \fBao_t\fR type and see \fBaop.h\fR(3HEAD) for possible assert operation values.
+
+.SH RETURN VALUES
+.sp
+.LP
+The \fBao_log()\fR function returns its \fIaop\fR argument as a result.
+
+.SH ATTRIBUTES
+.sp
+.LP
+See \fBattributes\fR(5) for descriptions of the following attributes:
+.sp
+
+.sp
+.TS
+tab(@) box;
+cw(2.75i) |cw(2.75i)
+lw(2.75i) |lw(2.75i)
+.
+ATTRIBUTE TYPE@ATTRIBUTE VALUE
+_
+Interface Stability@Committed
+_
+MT-Level@Safe
+_
+Standard@None
+.TE
+
+.SH SEE ALSO
+.sp
+.LP
+\fBao_assert\fR(3C), \fBao_run\fR(3C), \fBaop_cat\fR(3C), \fBaop.h\fR(3HEAD), \fBao.h\fR(3HEAD)
+
+.SH AUTHOR
+Written by Ali Muhammed <uniapi@outlook.com>
+.SH COPYRIGHT
+Copyright (c) 2022 Asserter, Org.
+.PP
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the Open Software License ("\s-1OSL\s0"), Version 3.0

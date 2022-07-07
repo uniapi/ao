@@ -1,0 +1,58 @@
+'\" te
+.\" بسم الله
+.\" Copyright (c) 2022, Asserter, Org. All Rights Reserved.
+.TH aop_cat 3c "7 Jul 2022" "SunOS 5.11" "C Library Functions"
+.SH NAME
+aop_cat \- assert operation concatenate
+.SH SYNOPSIS
+.LP
+.nf
+#include <ao/aop.h>
+
+\fBaop_t\fR \fBaop_cat\fR(\fBaop_t\fR \fIaop1\fR, \fBaop_t\fR \fIaop2\fR);
+.fi
+
+.SH DESCRIPTION
+.sp
+.LP
+The \fBaop_cat()\fR function concatenates two assert operation values using the most to less strict order: \fBAOP_FAIL\fR, \fBAOP_SKIP\fR and \fBAOP_PASS\fR.
+.sp
+
+.SH RETURN VALUES
+.sp
+.LP
+The \fBaop_cat()\fR function returns the most strict \fBAOP_FAIL\fR and then less strict \fBAOP_SKIP\fR if at least \fIaop1\fR or \fIaop2\fR has the equivalent value and returns \fBAOP_PASS\fR if both \fIaop1\fR and \fIaop2\fR are \fBAOP_PASS\fR values.
+
+.SH ATTRIBUTES
+.sp
+.LP
+See \fBattributes\fR(5) for descriptions of the following attributes:
+.sp
+
+.sp
+.TS
+tab(@) box;
+cw(2.75i) |cw(2.75i)
+lw(2.75i) |lw(2.75i)
+.
+ATTRIBUTE TYPE@ATTRIBUTE VALUE
+_
+Interface Stability@Committed
+_
+MT-Level@Safe
+_
+Standard@None
+.TE
+
+.SH SEE ALSO
+.sp
+.LP
+\fBao_log\fR(3C), \fBao_assert\fR(3C), \fBao_run\fR(3C), \fBaop.h\fR(3HEAD), \fBao.h\fR(3HEAD)
+
+.SH AUTHOR
+Written by Ali Muhammed <uniapi@outlook.com>
+.SH COPYRIGHT
+Copyright (c) 2022 Asserter, Org.
+.PP
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the Open Software License ("\s-1OSL\s0"), Version 3.0

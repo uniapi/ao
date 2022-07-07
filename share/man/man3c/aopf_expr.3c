@@ -1,0 +1,58 @@
+'\" te
+.\" بسم الله
+.\" Copyright (c) 2022, Asserter, Org. All Rights Reserved.
+.TH aopf_expr 3c "7 Jul 2022" "SunOS 5.11" "C Library Functions"
+.SH NAME
+aopf_expr \- assert operation for expression trueness or format
+.SH SYNOPSIS
+.LP
+.nf
+#include <ao/aopf.h>
+
+\fBaop_t\fR \fBaopf_expr\fR(\fBbool\fR \fIactual\fR, \fBconst char *\fR\fIfmt\fR, \fB/*\fR \fIargs\fR*/ ...);
+.fi
+
+.SH DESCRIPTION
+.sp
+.LP
+The \fBaopf_expr()\fR function asserts trueness of \fIactual\fR expression. If trueness fails then the function places the expected and \fIactual\fR boolean values and the formatted output \fIfmt\fR on the standard error stream \fBstderr\fR.
+.sp
+
+.SH RETURN VALUES
+.sp
+.LP
+Upon successful assert operation, the \fBaopf_expr()\fR function returns \fBAOP_PASS\fR. Otherwise, \fBAOP_FAIL\fR is returned and the assert operation is considered to be failed. If the assert operator mode is set to \fIAOMODE_STOP\fR the test stops immediately and the remaining assert operations are not run.
+
+.SH ATTRIBUTES
+.sp
+.LP
+See \fBattributes\fR(5) for descriptions of the following attributes:
+.sp
+
+.sp
+.TS
+tab(@) box;
+cw(2.75i) |cw(2.75i)
+lw(2.75i) |lw(2.75i)
+.
+ATTRIBUTE TYPE@ATTRIBUTE VALUE
+_
+Interface Stability@Committed
+_
+MT-Level@Safe
+_
+Standard@None
+.TE
+
+.SH SEE ALSO
+.sp
+.LP
+\fBaopf_exprskp\fR(3C), \fBaop_eq\fR(3C), \fBaop_cmp\fR(3C), \fBaopf.h\fR(3HEAD), \fBaop.h\fR(3HEAD), \fBao.h\fR(3HEAD)
+
+.SH AUTHOR
+Written by Ali Muhammed <uniapi@outlook.com>
+.SH COPYRIGHT
+Copyright (c) 2022 Asserter, Org.
+.PP
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the Open Software License ("\s-1OSL\s0"), Version 3.0

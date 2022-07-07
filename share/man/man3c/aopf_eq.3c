@@ -1,0 +1,188 @@
+'\" te
+.\" بسم الله
+.\" Copyright (c) 2022, Asserter, Org. All Rights Reserved.
+.TH aopf_eq 3c "7 Jul 2022" "SunOS 5.11" "C Library Functions"
+.SH NAME
+aopf_xx_eq \- assert operation for equality or format
+.SH SYNOPSIS
+.LP
+.nf
+#include <ao/aopf.h>
+
+\fBaop_t\fR \fBaopf_bool_eq\fR(\fBbool\fR \fIexpected\fR, \fBbool\fR \fIactual\fR, \fBconst char *\fR\fIfmt\fR,
+	\fB/*\fR \fIargs\fR*/ ...);
+.fi
+
+.LP
+.nf
+\fBaop_t\fR \fBaopf_char_eq\fR(\fBchar\fR \fIexpected\fR, \fBchar\fR \fIactual\fR, \fBconst char *\fR\fIfmt\fR,
+	\fB/*\fR \fIargs\fR*/ ...);
+.fi
+
+.LP
+.nf
+\fBaop_t\fR \fBaopf_shrt_eq\fR(\fBshort\fR \fIexpected\fR, \fBshort\fR \fIactual\fR, \fBconst char *\fR\fIfmt\fR,
+	\fB/*\fR \fIargs\fR*/ ...);
+.fi
+
+.LP
+.nf
+\fBaop_t\fR \fBaopf_int_eq\fR(\fBint\fR \fIexpected\fR, \fBint\fR \fIactual\fR, \fBconst char *\fR\fIfmt\fR,
+	\fB/*\fR \fIargs\fR*/ ...);
+.fi
+
+.LP
+.nf
+\fBaop_t\fR \fBaopf_long_eq\fR(\fBlong\fR \fIexpected\fR, \fBlong\fR \fIactual\fR, \fBconst char *\fR\fIfmt\fR,
+	\fB/*\fR \fIargs\fR*/ ...);
+.fi
+
+.LP
+.nf
+\fBaop_t\fR \fBaopf_llong_eq\fR(\fBlong long\fR \fIexpected\fR, \fBlong long\fR \fIactual\fR, \fBconst char *\fR\fIfmt\fR,
+	\fB/*\fR \fIargs\fR*/ ...);
+.fi
+
+.LP
+.nf
+\fBaop_t\fR \fBaopf_uchar_eq\fR(\fBunsigned char\fR \fIexpected\fR, \fBunsigned char\fR \fIactual\fR, \fBconst char *\fR\fIfmt\fR,
+	\fB/*\fR \fIargs\fR*/ ...);
+.fi
+
+.LP
+.nf
+\fBaop_t\fR \fBaopf_ushrt_eq\fR(\fBunsigned short\fR \fIexpected\fR, \fBunsigned short\fR \fIactual\fR, \fBconst char *\fR\fIfmt\fR,
+	\fB/*\fR \fIargs\fR*/ ...);
+.fi
+
+.LP
+.nf
+\fBaop_t\fR \fBaopf_uint_eq\fR(\fBunsigned int\fR \fIexpected\fR, \fBunsigned int\fR \fIactual\fR, \fBconst char *\fR\fIfmt\fR,
+	\fB/*\fR \fIargs\fR*/ ...);
+
+.fi
+
+.LP
+.nf
+\fBaop_t\fR \fBaopf_ulong_eq\fR(\fBunsigned long\fR \fIexpected\fR, \fBunsigned long\fR \fIactual\fR, \fBconst char *\fR\fIfmt\fR,
+	\fB/*\fR \fIargs\fR*/ ...);
+.fi
+
+.LP
+.nf
+\fBaop_t\fR \fBaopf_ullong_eq\fR(\fBunsigned long long\fR \fIexpected\fR, \fBunsigned long long\fR \fIactual\fR,
+	\fBconst char *\fR\fIfmt\fR, \fB/*\fR \fIargs\fR*/ ...);
+.fi
+
+.LP
+.nf
+\fBaop_t\fR \fBaopf_size_eq\fR(\fBsize_t\fR \fIexpected\fR, \fBsize_t\fR \fIactual\fR, \fBconst char *\fR\fIfmt\fR,
+	\fB/*\fR \fIargs\fR*/ ...);
+.fi
+
+.LP
+.nf
+\fBaop_t\fR \fBaopf_flt_eq\fR(\fBfloat\fR \fIexpected\fR, \fBfloat\fR \fIactual\fR, \fBfloat\fR \fIreltol\fR, \fBfloat\fR \fIabstol\fR,
+	\fBconst char *\fR\fIfmt\fR, \fB/*\fR \fIargs\fR*/ ...);
+
+.fi
+
+.LP
+.nf
+\fBaop_t\fR \fBaopf_dbl_eq\fR(\fBdouble\fR \fIexpected\fR, \fBdouble\fR \fIactual\fR, \fBdouble\fR \fIreltol\fR, \fBdouble\fR \fIabstol\fR,
+	\fBconst char *\fR\fIfmt\fR, \fB/*\fR \fIargs\fR*/ ...);
+
+.fi
+
+.LP
+.nf
+\fBaop_t\fR \fBaopf_ldbl_eq\fR(\fBlong double\fR \fIexpected\fR, \fBlong double\fR \fIactual\fR,
+	\fBlong double\fR \fIreltol\fR, \fBlong double\fR \fIabstol\fR,
+	\fBconst char *\fR\fIfmt\fR, \fB/*\fR \fIargs\fR*/ ...);
+
+.fi
+
+.LP
+.nf
+\fBaop_t\fR \fBaopf_str_eq\fR(\fBconst char *\fR\fIexpected\fR, \fBconst char *\fR\fIactual\fR, \fBconst char *\fR\fIfmt\fR,
+	\fB/*\fR \fIargs\fR*/ ...);
+.fi
+
+.LP
+.nf
+\fBaop_t\fR \fBaopf_mem_eq\fR(\fBconst void *\fR\fIexpected\fR, \fBconst void *\fR\fIactual\fR, \fBsize_t\fR \fInblk\fR, \fBsize_t\fR \fIblksz\fR,
+	\fBconst char *\fR\fIfmt\fR, \fB/*\fR \fIargs\fR*/ ...);
+.fi
+
+.SH DESCRIPTION
+.sp
+.LP
+The \fBaopf_xx_eq()\fR functions assert the \fIexpected\fR and \fIactual\fR arguments for equality. If equality fails then the functions place the \fIexpected\fR and \fIactual\fR values and the formatted output \fIfmt\fR on the standard error stream \fBstderr\fR.
+
+.sp
+.LP
+The \fBaopf_bool_eq()\fR function asserts \fIexpected\fR and \fIactual\fR boolean values for equality.
+
+.sp
+.LP
+The \fBaopf_char_eq()\fR and \fBaopf_uchar_eq()\fR functions assert \fIexpected\fR and \fIactual\fR characters for equality.
+
+.sp
+.LP
+The \fBaopf_shrt_eq()\fR, \fBaopf_int_eq()\fR, \fBaopf_long_eq()\fR, \fBaopf_llong_eq()\fR, \fBaopf_ushrt_eq()\fR, \fBaopf_uint_eq()\fR, \fBaopf_ulong_eq()\fR, \fBaopf_ullong_eq()\fR and \fBaopf_size_eq()\fR functions assert \fIexpected\fR and \fIactual\fR integer numbers for equality.
+
+.sp
+.LP
+The \fBaopf_flt_eq()\fR, \fBaopf_dbl_eq()\fR and \fBaopf_ldbl_eq()\fR functions assert \fIexpected\fR and \fIactual\fR floating-point numbers for equality using relative \fIreltol\fR and absolute \fIabstol\fR tolerance.
+
+.sp
+.LP
+The \fBaopf_str_eq()\fR function asserts \fIexpected\fR and \fIactual\fR strings for equality byte-by-byte, accoring to the current machine's character set ordering.
+
+.sp
+.LP
+The \fBaopf_mem_eq()\fR function asserts \fIexpected\fR and \fIactual\fR memory for equality, checking the first \fInblk\fR blocks where a block consists of \fIblksz\fR bytes (each interpreted as an \fBunsigned char\fR).
+
+.SH RETURN VALUES
+.sp
+.LP
+Upon successful assert operation, the \fBaopf_xx_eq()\fR functions return \fBAOP_PASS\fR. Otherwise, \fBAOP_FAIL\fR is returned and the assert operation is considered to be failed. If the assert operator mode is set to \fIAOMODE_STOP\fR the test stops immediately and the remaining assert operations are not run.
+
+.SH ATTRIBUTES
+.sp
+.LP
+See \fBattributes\fR(5) for descriptions of the following attributes:
+.sp
+
+.sp
+.TS
+tab(@) box;
+cw(2.75i) |cw(2.75i)
+lw(2.75i) |lw(2.75i)
+.
+ATTRIBUTE TYPE@ATTRIBUTE VALUE
+_
+Interface Stability@Committed
+_
+MT-Level@Safe
+_
+Standard@None
+.TE
+
+.SH SEE ALSO
+.sp
+.LP
+\fBaopf_eqskp\fR(3C), \fBaop_eq\fR(3C), \fBaop_expr\fR(3C), \fBaop_cmp\fR(3C), \fBaopf.h\fR(3HEAD), \fBaop.h\fR(3HEAD), \fBao.h\fR(3HEAD)
+
+.SH NOTES
+.sp
+.LP
+When both \fIexpected\fR and \fIactual\fR arguments are \fINULL\fR the \fBaopf_str_eq()\fR and \fBaopf_mem_eq()\fR functions return \fBAOP_PASS\fR and the assert operation is considered to be successfull.
+
+.SH AUTHOR
+Written by Ali Muhammed <uniapi@outlook.com>
+.SH COPYRIGHT
+Copyright (c) 2022 Asserter, Org.
+.PP
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the Open Software License ("\s-1OSL\s0"), Version 3.0
