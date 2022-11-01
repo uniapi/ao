@@ -1,0 +1,177 @@
+'\" te
+.\" بسم الله
+.\" Copyright (c) 2022, Asserter, Org. All Rights Reserved.
+.TH aov.h 3HEAD "Jul 2022" "SunOS 5.11" "Headers"
+.SH NAME
+aov.h, aov \- assertion operation violation
+.SH SYNOPSIS
+.LP
+.nf
+\fB#include <ao/aov.h>\fR
+.fi
+
+.SH DESCRIPTION
+.sp
+.LP
+The \fB<ao/aov.h>\fR header defines the \fBaov_t\fR type through \fBtypedef\fR and defines the following assertion operation violation:
+.sp
+.ne 2
+.mk
+.na
+\fBAOV_NONE\fR
+.ad
+.RS 18n
+.rt
+No Violation
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBAOV_MEMV\fR
+.ad
+.RS 18n
+.rt
+Memory Access Violation
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBAOV_PTRV\fR
+.ad
+.RS 18n
+.rt
+Pointer Value Violation
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBAOV_RTMV\fR
+.ad
+.RS 18n
+.rt
+Real Time Expiration Violation
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBAOV_UTMV\fR
+.ad
+.RS 18n
+.rt
+User Time Expiration Violation
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBAOV_ETMV\fR
+.ad
+.RS 18n
+.rt
+Execution Time Expiration Violation
+.RE
+
+.sp
+.LP
+The \fB<ao/aov.h>\fR header defines the \fBaov_catch()\fR function as a macro to start catching violations. But first the violations of interest should be set to watch with the \fBaov_watch\fR(3C) function.
+
+.sp
+.LP
+Use the \fBaov_assert\fR(3C) function to assert violations and the \fBaov_handle\fR(3C) function to handle violations.
+
+.SH EXAMPLES
+.sp
+.LP
+\fBExample 1\fR A template code to set watching, catching and handling \fBAOV_MEMV\fR and \fBAOV_PTRV\fR assert operation violation:
+
+.sp
+.in +2
+.nf
+#include <ao/aov.h>
+\&...
+int aovhdlr(aov_t aov, void *arg)
+{
+	switch (aov) {
+	case AOV_MEMV:
+		fprintf(stderr, "Unexpected: Memory Access Violation\\n");
+		break;
+	case AOV_PTRV:
+		fprintf(stderr, "Unexpected: Pointer Value Violation\\n");
+		break;
+	default:
+		return aov;
+	}
+	exit(aov);
+}
+
+int main()
+{
+	aov_t aov;
+\&...
+	aov_watch(AOV_MEMV);
+	aov_watch(AOV_PTRV);
+	if (aov = aov_catch())
+		aov_handle(aov, aovhdlr, NULL);
+\&...
+	return 0;
+}		
+.fi
+.in -2
+
+.sp
+.LP
+\fBExample 2\fR Setting assertion operation violation watching to \fBAOV_PTRV\fR in some different point:
+
+.sp
+.in +2
+.nf
+#include <ao/aov.h>
+\&...
+aov_watch(AOV_NONE);
+aov_watch(AOV_PTRV);
+\&...
+.fi
+.in -2
+
+.SH ATTRIBUTES
+.sp
+.LP
+See \fBattributes\fR(5) for descriptions of the following attributes:
+.sp
+
+.sp
+.TS
+tab(@) box;
+cw(2.75i) |cw(2.75i)
+lw(2.75i) |lw(2.75i)
+.
+ATTRIBUTE TYPE@ATTRIBUTE VALUE
+_
+Interface Stability@Committed
+_
+MT-Level@Safe
+_
+Standard@None
+.TE
+
+.SH SEE ALSO
+.sp
+.LP
+\fBaov_watch\fR(3C), \fBaov_handle\fR(3C), \fBaov_assert\fR(3C), \fBaov_assert_memv\fR(3C), \fBaov_assert_ptrv\fR(3C), \fBaop.h\fR(3HEAD), \fBao.h\fR(3HEAD)
+
+.SH AUTHOR
+Written by Ali Muhammed <uniapi@outlook.com>
+.SH COPYRIGHT
+Copyright (c) 2022 Asserter, Org.
+.PP
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the Open Software License ("\s-1OSL\s0"), Version 3.0

@@ -1,0 +1,185 @@
+'\" te
+.\" بسم الله
+.\" Copyright (c) 2022, Asserter, Org. All Rights Reserved.
+.TH ao.h 3HEAD "Jul 2022" "SunOS 5.11" "Headers"
+.SH NAME
+ao.h, ao \- assert operator
+.SH SYNOPSIS
+.LP
+.nf
+\fB#include <ao/ao.h>\fR
+.fi
+
+.SH DESCRIPTION
+.sp
+.LP
+The \fB<ao/ao.h>\fR header defines the \fBaolog_t\fR type for logging assert operations. The logger should not be modified directly as assert operator performs logging automatically. However, if a custom logging is needed then disable assert operator logging by setting the field \fIinc\fR to \fBAOINC_NONE\fR and use the \fBao_log\fR(3C) function. The type is documented only for interfacing custom \fBao_stats()\fR and \fBaov_handler()\fR functions and includes the following members:
+.sp
+.in +2
+.nf
+size_t nlog        /* the number of logs (cases); increasing dynamically on overflow */
+size_t ndx         /* the current case index */
+size_t passed      /* the number of passed cases */
+size_t failed      /* the number of failed cases */
+size_t skipped     /* the number of skipped cases */
+.fi
+.in -2
+
+.sp
+.LP
+The \fB<ao/ao.h>\fR header defines the \fBaoinc_t\fR type through \fBtypedef\fR and defines the following assert operator incrementation behaviour:
+.sp
+.ne 2
+.mk
+.na
+\fBAOINC_AUTO\fR
+.ad
+.RS 18n
+.rt
+Automatical logging by assert operator
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBAOINC_NONE\fR
+.ad
+.RS 18n
+.rt
+Custom logging by calling the \fBao_log()\fR function
+.RE
+
+.sp
+.LP
+The \fB<ao/ao.h>\fR header defines the \fBaomode_t\fR type through \fBtypedef\fR and defines the following assert operator modes:
+.sp
+.ne 2
+.mk
+.na
+\fBAOMODE_STOP\fR
+.ad
+.RS 18n
+.rt
+Stop the test on case failure
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBAOMODE_NONE\fR
+.ad
+.RS 18n
+.rt
+Continue the test on case failure
+.RE
+
+.sp
+.LP
+The \fB<ao/ao.h\fR header defines the \fBAO_AOV\fR macro that allows to watch, intercept and handle assertion operation violation if the system supports base signals. Undefining or setting the \fBAO_AOV\fR macro to \fB0\fR disables handling assertion operation violation.
+
+.sp
+.LP
+The \fB<ao/ao.h>\fR header defines the \fBao_t\fR type that includes the following members:
+.sp
+.in +2
+.nf
+const char *descr                              /* a test description to output */
+void       *data                               /* data cases or a data case generator (see \fBNOTES\fR) */
+size_t     ncase                               /* the number of data cases */
+size_t     casesz                              /* the size of a data case or zero if the generator is used */
+int        (*setup)(void)                      /* an optional user setup function */
+aop_t      (*assert_case)(void *aocase)        /* the user assert operation function */
+void       (*at_case_fail)(const void *aocase) /* an optional user on case fail function */ 
+void       (*at_case_exit)(void *aocase)       /* an optional user on case exit function */
+size_t     (*ao_stats)(const ao_t *ao)         /* an optional user statistics function */
+aoinc_t    inc                                 /* the assert operator incrementor */
+aomode_t   mode                                /* the assert operator mode */
+aolog_t    logger                              /* the assert operator logger */
+void      *aocase                              /* the current assert operator case */
+#if defined(AO_AOV) && AO_AOV
+aop_t      (*aov_handler)(aov_t aov, ao_t *ao) /* an optional assertion operation violation handler */
+#endif
+.fi
+.in -2
+
+.sp
+.LP
+The \fIaocase\fR field points to memory containing the current assert operator case regardless of using compiled data cases or a case generator.
+
+.sp
+.LP
+The optional \fBsetup()\fR function is called only once after the default assert operator setup but immediately before running the first assert operator case and that is nice to set timers or tune violation watchings. Non-zero value from \fBsetup()\fR causes skipping assert operations.
+
+.sp
+.LP
+The optional \fBat_case_fail()\fR function is called only if the case assertion has failed and can be nicely used to print a custom output, debug, send over a network or to do whatever need on failing but to release system resources the \fBat_case_exit()\fR function should be used.
+
+.sp
+.LP
+The optional \fBat_case_exit()\fR function is called every time after the case assertion has finished regardless of the result state and is called after \fBat_case_fail()\fR but before the \fBao_stats()\fR function. The function should mainly be used to release system resources but can be used for different purposes also.
+
+.sp
+.LP
+The optional \fBao_stats()\fR function, if provided, should display the human-readable test statistics and is called before exiting the test but after handling assertion operation violation if the handling is switched on. Otherwise, \fBao_stats()\fR may be not called if violation causes a corrupted program state. The default \fBao_stats()\fR function is used if not provided.
+ 
+.sp
+.LP
+The optional \fBaov_handler()\fR function can be provided to handle assertion operation violation in more preffered way. Otherwise, the default handler is used. See \fBaov.h\fR(3HEAD) for more details about assertion operation violation and \fBao_aovhdlr\fR(3C) for the default assert operator handler code.
+
+.SH ATTRIBUTES
+.sp
+.LP
+See \fBattributes\fR(5) for descriptions of the following attributes:
+.sp
+
+.sp
+.TS
+tab(@) box;
+cw(2.75i) |cw(2.75i)
+lw(2.75i) |lw(2.75i)
+.
+ATTRIBUTE TYPE@ATTRIBUTE VALUE
+_
+Interface Stability@Committed
+_
+MT-Level@Safe
+_
+Standard@None
+.TE
+
+.SH SEE ALSO
+.sp
+.LP
+\fBao_log\fR(3C), \fBao_assert\fR(3C), \fBao_run\fR(3C), \fBao_aovhdlr\fR(3C), \fBaov.h\fR(3HEAD), \fBaot.h\fR(3HEAD), \fBaop.h\fR(3HEAD), \fBaopf.h\fR(3HEAD), \fBao\fR(1)
+
+.SH NOTES
+.sp
+.LP
+The \fBge_case()\fR generator can be run in place of \fIdata\fR. The contract: the field \fIcasesz\fR should be set to \fB0\fR and \fBge_case()\fR should return the size of \fIaocase\fR when passed \fINULL\fR.
+
+.sp
+.in +2
+.nf
+aocase_t *ge_case(aocase_t *aoc)
+{
+    if (!aoc)
+        return (aocase_t *)sizeof(aocase_t);
+\&...
+    return aoc;
+}
+.fi
+.in -2
+
+.sp
+.LP
+However the contract is inserted automatically if the assert operator shell \fBao\fR(1) is used while building tests.
+
+.SH AUTHOR
+Written by Ali Muhammed <uniapi@outlook.com>
+.SH COPYRIGHT
+Copyright (c) 2022 Asserter, Org.
+.PP
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the Open Software License ("\s-1OSL\s0"), Version 3.0
