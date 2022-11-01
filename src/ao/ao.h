@@ -9,6 +9,7 @@
 
 #include <ao/aop.h>
 #include <ao/fstd.h>
+#include <ao/aov.h>
 
 typedef struct aolog {
 	size_t nlog;
@@ -42,6 +43,7 @@ typedef struct ao {
 	aomode_t mode;
 	aolog_t logger;	/* Do not use it as overwritten automatically! */
 	void *aocase;
+	aop_t (*aov_handler)(aov_t aov, struct ao *ao);
 } ao_t;
 
 aop_t ao_log(aop_t aop, ao_t *ao);

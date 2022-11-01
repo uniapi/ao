@@ -9,6 +9,9 @@
 
 static __thread ao_t _ao;
 
+extern __thread aovenv_t _aovenv;
+extern __thread aovenv_t _assertenv;
+
 static void ao_stats(const ao_t *ao)
 {
 	fstdout("\nTotal Cases: %zu\n", ao->logger.nlog);
@@ -43,10 +46,40 @@ aop_t ao_log(aop_t aop, ao_t *ao)
 	return aop;
 }
 
+aop_t ao_aovhdlr(aov_t aov, ao_t *ao)
+{
+	const char *aovmsg;
+/* no need to check for AOINC while skipping or violating assertion */
+	switch(aov) {
+	case AOV_MEMV:
+		aovmsg = AOV_MSG_MEMV;
+		break;
+	case AOV_PTRV:
+		aovmsg = AOV_MSG_PTRV;
+		break;
+	case AOV_RTMV:
+		aovmsg = AOV_MSG_RTMV;
+		break;
+	case AOV_UTMV:
+		aovmsg = AOV_MSG_UTMV;
+		break;
+	case AOV_ETMV:
+		aovmsg = AOV_MSG_ETMV;
+		break;
+	default:
+		return ao_log(AOP_SKIP, ao);
+	}
+	ao_log(AOP_FAIL, ao);
+	fstderr("%s%s", AOV_MSGHDR, aovmsg);
+	ao->ao_stats ? (*ao->ao_stats)(ao) : ao_stats(ao);
+	exit(AOP_FAIL);
+}
+
 aop_t ao_assert(const char *descr, void *data, size_t ncase, size_t casesz,
 	aop_t (*assert_case)(void *aocase))
 {
 	aop_t aop = AOP_PASS;
+	aov_t aov;
 	_ao.logger.nlog = _ao.logger.skipped = ncase;
 	_ao.logger.ndx = _ao.logger.passed = _ao.logger.failed = 0;
 	if (casesz)
@@ -54,6 +87,15 @@ aop_t ao_assert(const char *descr, void *data, size_t ncase, size_t casesz,
 	else if (!(_ao.aocase = malloc((*(size_t (*)(void *))data)(NULL))))
 		return AOP_SKIP;
 	fstdout("%s\n", descr);
+	aov_watch(AOV_MEMV);
+	aov_watch(AOV_PTRV);
+	aov_watch(AOV_RTMV);
+	aov_watch(AOV_UTMV);
+	aov_watch(AOV_ETMV);
+	if (aov = aov_catch())
+		aov_handle(aov, (int (*)(aov_t, void *))ao_aovhdlr, &_ao);
+	if (aov_ecatch(_assertenv))
+		ao_log(aop = AOP_FAIL, &_ao), ncase = 0;
 	while (ncase--) {
 		aop = (*assert_case)
 		(
@@ -74,8 +116,11 @@ aop_t ao_run(ao_t *ao)
 {
 	aop_t aop = AOP_PASS;
 	size_t ncase;
+	aov_t aov;
+	aop_t (*aov_handler)(aov_t, ao_t *ao) = ao->aov_handler ? ao->aov_handler : ao_aovhdlr;
 	void (*at_case_fail)(const void *) = ao->at_case_fail ? ao->at_case_fail : (void (*)(const void *))ao_nop;
 	void (*at_case_exit)(void *) = ao->at_case_exit ? ao->at_case_exit : (void (*)(void *))ao_nop;
+	int (*setup)() = ao->setup ? ao->setup : NULL;
 	if (ao_setdefs(ao) != AOP_PASS)
 		return AOP_SKIP;
 	ncase = ao->ncase;
@@ -84,9 +129,20 @@ aop_t ao_run(ao_t *ao)
 	else if (!(ao->aocase = malloc((*(size_t (*)(void *))ao->data)(NULL))))
 		return AOP_SKIP;
 	fstdout("%s\n", ao->descr);
-	if (ao->setup)
-		if ((*ao->setup)())
+	aov_watch(AOV_MEMV);
+	aov_watch(AOV_PTRV);
+	aov_watch(AOV_RTMV);
+	aov_watch(AOV_UTMV);
+	aov_watch(AOV_ETMV);
+	if (aov = aov_catch())
+		aov_handle(aov, (int (*)(aov_t, void *))aov_handler, ao);
+	if (aov_ecatch(_assertenv))
+		ao_log(aop = AOP_FAIL, ao), ncase = 0;
+	if (setup)
+		if ((*setup)())
 			aop = AOP_SKIP, ncase = 0;
+		else
+			setup = NULL;
 	while (ncase--) {
 		aop = (*ao->assert_case)
 		(
