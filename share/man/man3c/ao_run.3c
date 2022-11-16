@@ -1,0 +1,123 @@
+'\" te
+.\" بسم الله
+.\" Copyright (c) 2022, Asserter, Org. All Rights Reserved.
+.TH ao_run 3C "Jul 2022" "SunOS 5.11" "C Library Functions"
+.SH NAME
+ao_run \- assert operator run
+.SH SYNOPSIS
+.LP
+.nf
+#include <ao/ao.h>
+
+\fBaop_t\fR \fBao_run\fR(\fBao_t *\fR\fIao\fR);
+.fi
+
+.SH DESCRIPTION
+.sp
+.LP
+The \fBao_run()\fR function is designed to give the full control over the test settings. If the full control is not needed, then consider the \fBao_assert\fR(3C) function that is a bit faster and simpler.
+
+.sp
+.LP
+The \fBao_run()\fR function accepts the only argument that is an \fBao_t\fR type pointer. See \fBao.h\fR(3HEAD) for more details about the \fBao_t\fR type.
+
+.SH EXAMPLES
+.LP
+\fBExample 1\fR The Sum Test.
+.sp
+.LP
+The example below uses an optional at_case_fail() function for custom output and asserts memory for violation with default handling.
+
+.sp
+.in +2
+.nf
+#include <ao/ao.h>
+
+extern long sum(const int *values, size_t cnt);
+
+#define LIM	69
+
+typedef struct aocase {
+	size_t cnt;
+	int values[LIM];
+	long expected;
+	long actual;
+} aocase_t;
+
+void at_case_fail(const aocase_t *aoc)
+{
+	size_t i;
+	fstderr("> Assertion Failed <\\n");
+	fstderr("Expected: %ld\\n*Actual*: %ld\\nValues: [", aoc->expected, aoc->actual);
+	for (i = 0; i < aoc->cnt; ++i)
+		fstderr("%s  %4i", (!(i & 7) ? "\\n    " : ""), aoc->values[i]);
+	fstderr("\\n]\\nCount: %zu\\n", aoc->cnt);
+}
+
+aop_t assert_case(aocase_t *aoc)
+{
+	int values[LIM];
+	aoc->actual = sum(memcpy(values, aoc->values, aoc->cnt * sizeof(int)), aoc->cnt);
+	aov_assert_memv(aoc->values, values, aoc->cnt, sizeof(int));
+	return aop_long_eq(aoc->expected, aoc->actual);
+}
+
+int main()
+{
+	aocase_t aoc[] = {
+		{ 0 },
+		{ 1, {1}, 1 },
+		\&...
+		{ 10, {0,1,2,3,4,5,6,7,8,9}, 45 },
+	};
+	ao_t ao = {
+		"***** Sum Test *****",
+		aoc,
+		sizeof(aocase_t),
+		sizeof aoc / sizeof(aocase_t),
+		assert_case,
+		at_case_fail		
+	};
+	return ao_run(&ao);
+}
+.fi
+.in -2
+
+.SH RETURN VALUES
+.sp
+.LP
+The \fBao_run()\fR function returns the assert operation value that can be concatenated with another assert operation values if needed and be returned as a result from the main function.
+
+.SH ATTRIBUTES
+.sp
+.LP
+See \fBattributes\fR(5) for descriptions of the following attributes:
+.sp
+
+.sp
+.TS
+tab(@) box;
+cw(2.75i) |cw(2.75i)
+lw(2.75i) |lw(2.75i)
+.
+ATTRIBUTE TYPE@ATTRIBUTE VALUE
+_
+Interface Stability@Committed
+_
+MT-Level@Safe
+_
+Standard@None
+.TE
+
+.SH SEE ALSO
+.sp
+.LP
+\fBao_assert\fR(3C), \fBao_log\fR(3C), \fBao.h\fR(3HEAD), \fBaop.h\fR(3HEAD), \fBaov.h\fR(3HEAD), \fBao\fR(1)
+
+.SH AUTHOR
+Written by Ali Muhammed <uniapi@outlook.com>
+.SH COPYRIGHT
+Copyright (c) 2022 Asserter, Org.
+.PP
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the Open Software License ("\s-1OSL\s0"), Version 3.0
