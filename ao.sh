@@ -1,5 +1,5 @@
 #!/bin/bash
-#
+#\uFDFD
 #        Written by Ali Muhammed
 #           uniapi@outlook.com
 #              Nov 27, 2022
@@ -7,14 +7,19 @@
 
 AO_VERSION="Assert Operator (debug-0.1.0)"
 
-LANGS="as c nasm"
+LANGS="as c nasm aarch64 riscv64"
+TARGETS="x86_64 aarch64 riscv64"
 
 AOHELP_NEW="ao new [project-name] [--verbose] [--lang language] [--proto prototype] [--defs]"
-AOHELP_BUILD="ao build [--verbose] [--lang language] [--lib library] [--xflags flags]"
+AOHELP_BUILD="ao build [--verbose] [--lang language] [--sol solution] [--lib library] [--xflags flags] [--target target]"
 AOHELP_ENCRYPT="ao encrypt <file | dir> [--cipher cipher]"
 AOHELP_DECRYPT="ao decrypt <file | dir> [--cipher cipher]"
 AOHELP_NOTE="ao note <file> \"opener\" \"center\" \"closer\""
-AOHELP_SETUP="ao setup [--verbose]"
+AOHELP_SETUP="ao setup [--verbose] [--target target]"
+
+OPC_CMD=1
+OPC_FILE=2
+OPC_BUILD=3
 
 ao() {
 	AO_SETUP=${AO_SETUP:-"$HOME/.ao"}
@@ -47,11 +52,11 @@ ao() {
 		shift
 		if [ "$1" = "help" ]; then
 			if [ $# -ne 1 ]; then
-				aoeexit 1 "$AOHELP_NOTE"
+				aoeexit $OPC_CMD "$AOHELP_NOTE"
 			fi
 			aoexit "$AOHELP_NOTE"
 		elif [ $# -ne 4 ]; then
-			aoeexit 1 "$AOHELP_NOTE"
+			aoeexit $OPC_CMD "$AOHELP_NOTE"
 		fi
 		aonote "$@"
 		;;
@@ -76,15 +81,16 @@ aohelp() {
 	printf "\ntype \"ao [command] help\" for more information about a command\n"
 }
 
-# aosetup [--verbose]
+# aosetup [--verbose] [--target target]
 #
 # [-v] [--verbose]
+#      [--target target]
 
 aosetup() {
 	AOHELP="$AOHELP_SETUP"
 	if [ "$2" = "help" ]; then
 		if [ $# -gt 2 ]; then
-			aoeexit 1 "$AOHELP"
+			aoeexit $OPC_CMD "$AOHELP"
 		fi
 		aoexit "$AOHELP"
 	fi
@@ -95,11 +101,17 @@ aosetup() {
 			locked "$VERBOSE" "--verbose should be used only once!"
 			VERBOSE="v"
 			;;
-		* ) aoeexit 1 "$AOHELP"
+		"--target" )
+			locked "$TARGET" "--target should be used only once!"
+			shift
+			TARGET="$1"
+			isof "$TARGET" "$TARGETS" "should use one of [$TARGETS] targets!"
+			;;
+		* ) aoeexit $OPC_CMD "$AOHELP"
 		esac
 	done
 	if [ ! -d $PWD/src/ao ]; then
-		aoeexit 2 "$PWD does not contain src/ao"
+		aoeexit $OPC_FILE "$PWD does not contain src/ao"
 	fi
 	if [ -d $AO_SETUP ]; then
 		yesno "ao: '$AO_SETUP' does already exist: update ([y]/n): " "exiting..."
@@ -108,25 +120,25 @@ aosetup() {
 		verbose "mkdir -p $AO_SETUP"
 	fi
 # compiling, cleaning and installing libaop.so
-	CC=${CC:-"gcc"}
+	set_cc
 	CFLAGS="-O2 -g -DDEBUG -I./src -fPIC -c"
 	for c in src/ao/*.c; do
 		verbose "${CC} ${CFLAGS} $c"
 		${CC} ${CFLAGS} "$c"
 		if [ $? -ne 0 ]; then
-			exit 1
+			exit $OPC_BUILD
 		fi
 	done
 	${CC} -shared -g -o libaop.so *.o
 	verbose "${CC} -shared -o libaop.so *.o"
 	rm -f *.o
 	verbose "rm -f *.o"
-	if [ ! -d $AO_LIB ]; then
-		mkdir -p "$AO_LIB"
-		verbose "mkdir -p $AO_LIB"
+	if [ ! -d $AO_LIB/$TARGET ]; then
+		mkdir -p "$AO_LIB/$TARGET"
+		verbose "mkdir -p $AO_LIB/$TARGET"
 	fi
-	mv libaop.so "$AO_LIB/"
-	verbose "mv libaop.so $AO_LIB/"
+	mv libaop.so "$AO_LIB/$TARGET/"
+	verbose "mv libaop.so $AO_LIB/$TARGET/"
 # installing ao headers
 	if [ ! -d $AO_INCLUDE/ao ]; then
 		mkdir -p $AO_INCLUDE/ao
@@ -148,14 +160,16 @@ aosetup() {
 	ln -s $AO_SETUP/ao.sh $HOME/bin/ao
 	verbose "ln -s $AO_SETUP/ao.sh $HOME/bin/ao"
 echo "finished"
-    printf "\nremember to edit '$AO_SETUP/lib' path to 'LD_LIBRARY_PATH' variable\n"
+	printf "\nremember to edit '$AO_SETUP/lib/$TARGET' path to 'LD_LIBRARY_PATH' variable\n"
 }
 
-# ao build [--lang language] [--lib library] [--xflags flags] [--verbose]
+# ao build [--lang language] [--sol solution] [--lib library] [--xflags flags] [--target target] [--verbose]
 #
-# [-L] [--lang [as | c | nasm]]
+# [-L] [--lang [as | c | nasm | aarch64 | riscv64]]
+#      [--sol <solution>]
 # [-l] [--lib <library>]
 # [-x] [--xflags <flags>]
+#      [--target <target>]
 # [-v] [--verbose]
 
 aobuild() {
@@ -177,7 +191,7 @@ aobuild() {
 
 	if [ "$2" = "help" ]; then
 		if [ $# -gt 2 ]; then
-			aoeexit 1 "$AOHELP"
+			aoeexit $OPC_CMD "$AOHELP"
 		fi
 		aoexit "$AOHELP"
 	fi
@@ -189,6 +203,11 @@ aobuild() {
 			shift
 			LANG="$1"
 			isof "$LANG" "$LANGS" "should use one of [$LANGS] langs!"
+			;;
+		"--sol" )
+			locked "$SOLUTION" "--sol should be used only once!"
+			shift
+			SOLUTION="$1"
 			;;
 		"-l"* )
 			LIBS="$LIBS $1"
@@ -205,13 +224,19 @@ aobuild() {
 			locked "$VERBOSE" "--verbose should be used only once!"
 			VERBOSE="v"
 			;;
-		* ) aoeexit 1 "$AOHELP"
+		"--target" )
+			locked "$TARGET" "--target should be used only once!"
+			shift
+			TARGET="$1"
+			isof "$TARGET" "$TARGETS" "should use one of [$TARGETS] targets!"
+			;;
+		* ) aoeexit $OPC_CMD "$AOHELP"
 		esac
 	done
 	LANG=${LANG:-"as"}
 # checking whether test.c exists
 	if [ ! -f "$TEST" ]; then
-		aoeexit 2 "test.c is not found!"
+		aoeexit $OPC_FILE "test.c is not found!"
 	fi
 	SETUP=$(cat "$TEST" | grep -o '\([[:space:]]*int[[:space:]]\)\?[[:space:]]*setup[[:space:]]*(' | grep -o 'setup')
 	AT_CASE_FAIL=$(cat "$TEST" | grep -o '[[:space:]]*void[[:space:]]\{1,\}at_case_fail[[:space:]]*(' | grep -o 'at_case_fail')
@@ -220,11 +245,7 @@ aobuild() {
 	AORUNNER=""
 
 	printf "#include <ao/ao.h>\n" > "$MAIN"
-	if [ -n "$AT_CASE_FAIL" ]; then
-		printf "#include <ao/fstd.h>\n" >> "$MAIN"
-		AORUNNER="ao_run"
-	fi
-	if [ -n "$AT_CASE_EXIT" ]; then
+	if [ -n "$AT_CASE_FAIL" ] || [ -n "$AT_CASE_EXIT" ]; then
 		printf "#include <ao/fstd.h>\n" >> "$MAIN"
 		AORUNNER="ao_run"
 	fi
@@ -323,65 +344,134 @@ aobuild() {
 	printf "\treturn aop;\n}\n" >> "$MAIN"
 
 # assembling the appropriate solution
+	set_target
+	set_cc
+	if [ $PLATFORM = $TARGET ]; then
+		EXEC="test"
+	else
+		EXEC="$TARGET-test"
+	fi
+	opcode=$OPC_BUILD
 	case "$LANG" in
 	"c" )
-		SOLUTION="solution.c"
-		if [ -f "$SOLUTION" ]; then
-			$CC $CFLAGS $XFLAGS -c "$SOLUTION" -o "$SOLUTION".o
+		SOLUTION=${SOLUTION:-"solution.c"}
+		if [ ! -f "$SOLUTION" ]; then
+			aoeexit $OPC_FILE "$SOLUTION does not exist"
 		fi
+		$CC $CFLAGS $XFLAGS -c "$SOLUTION" -o "$SOLUTION".o
+		opcode=$?
 		;;
 	"as" )
-	# native assembly
-		case "$PLATFORM" in
-		"x86_64" )
-			SOLUTION="solution-x86_64.s"
-			;;
-		"aarch64" )
-			SOLUTION="solution-aarch64.s"
+	# detecting as
+		case "$TARGET" in
+		"x86_64" | "aarch64" )
+			SOLUTION=${SOLUTION:-"solution-$TARGET.s"}
 			;;
 		"riscv64" )
-			SOLUTION="solution-riscv64.s"
+			SOLUTION=${SOLUTION:-"solution-riscv64.s"}
 			;;
 		#
 		# Edit a new platform here
 		#
 		* ) LINE=$(($LINENO-1))
-			IMPL=$(printf "\n\n\"$PLATFORM\" )\n    SOLUTION=\"solution-$PLATFORM.s\"\n    ;;\n\n")
+			IMPL=$(printf "\n\n\"$PLATFORM\" )\n    SOLUTION=\${SOLUTION:-\"solution-$PLATFORM.s\"}\n    ;;\n\n")
 			AOMSG=$(printf "unsupported platform! Go to the line $LINE and add the following to support it")
-			aoeexit 1 "$AOMSG:$IMPL"
+			aoeexit $OPC_CMD "$AOMSG:$IMPL"
 		esac
-		if [ -f "$SOLUTION" ]; then
-			$AS $XFLAGS "$SOLUTION" -o "$SOLUTION".o
+		if [ ! -f "$SOLUTION" ]; then
+			aoeexit $OPC_FILE "$SOLUTION does not exist"
 		fi
+		$CC $CFLAGS $XFLAGS -c "$SOLUTION" -o "$SOLUTION".o
+		opcode=$?
 		;;
 	"nasm" )
-		SOLUTION="solution-nasm.s"
-		if [ -f "$SOLUTION" ]; then
-			nasm -f elf64 $XFLAGS "$SOLUTION" -o "$SOLUTION".o
+		SOLUTION=${SOLUTION:-"solution-nasm.s"}
+		if [ ! -f "$SOLUTION" ]; then
+			aoeexit $OPC_FILE "$SOLUTION does not exist"
 		fi
+		nasm -f elf64 $XFLAGS "$SOLUTION" -o "$SOLUTION".o
+		opcode=$?
+		;;
+	# guest assembly
+	"riscv64" | "aarch64" )
+		SOLUTION=${SOLUTION:-"solution-$LANG.s"}
+		if [ ! -f "$SOLUTION" ]; then
+			aoeexit $OPC_FILE "$SOLUTION does not exist"
+		fi
+		$CC $CFLAGS $XFLAGS -c "$SOLUTION" -o "$SOLUTION".o
+		opcode=$?
 		;;
 	esac
+	if [ $opcode -ne 0 ]; then
+		aoeexit $OPC_BUILD "failed"
+	fi
+	$CC $CFLAGS "$MAIN" "$SOLUTION".o -I $AO_INCLUDE -L $AO_LIB/$TARGET $LIBS -o "$EXEC"
 	opcode=$?
+	rm -f "$SOLUTION".o
 	if [ $opcode -ne 0 ]; then
-		exit 1
-	fi
-	if [ -f "$SOLUTION".o ]; then
-		$CC $CFLAGS "$MAIN" "$SOLUTION".o -I $AO_INCLUDE -L $AO_LIB $LIBS -o "$EXEC"
-		opcode=$?
-		rm -f "$SOLUTION".o
-	else
-		$CC $CFLAGS "$MAIN" "$SOLUTION".o -I $AO_INCLUDE -L $AO_LIB $LIBS -o "$EXEC"
-		opcode=$?
-	fi
-	if [ $opcode -ne 0 ]; then
-		exit 2
+		aoeexit $OPC_BUILD "failed"
 	fi
 echo "done"
 }
 
+set_target() {
+	if [ -z $TARGET ]; then
+		case $LANG in
+		"as" | "c" )
+			TARGET=$PLATFORM
+			;;
+		"nasm" )
+			TARGET="x86_64"
+			;;
+		"aarch64" | "riscv64" )
+			TARGET=$LANG
+			;;
+		esac
+	else
+		case $TARGET in
+		"x86_64" )
+			case $LANG in
+			"aarch64" | "riscv64" )
+				aoeexit  $OPC_CMD "wrong target x86_64 for lang $LANG"
+				;;
+			esac
+		;;
+		"aarch64" )
+			case $LANG in
+			"nasm" | "riscv64" )
+				aoeexit $OPC_CMD "wrong target aarch64 for lang $LANG"
+				;;
+			esac
+		;;
+		"riscv64" )
+			case $LANG in
+			"nasm" | "aarch64" )
+				aoeexit $OPC_CMD "wrong target riscv64 for lang $LANG"
+				;;
+			esac
+		;;
+		esac
+	fi
+}
+
+set_cc() {
+	if [ -z $TARGET ]; then
+		TARGET=$PLATFORM
+	fi
+	if [ "$TARGET" = "$PLATFORM" ]; then
+		CC=${CC:-"gcc"}
+	else
+		CC="${TARGET^^}_CC"
+		if [ -z "${!CC}" ]; then
+			aoeexit $OPC_CC "export $CC=$TARGET-your-cc-compiler to set a compiler"
+		fi
+		CC="${!CC}"
+	fi
+}
+
 # ao new [project-name] [--lang language] [--proto prototype] [--defs] [--verbose]
 #
-# [-L] [--lang [as | c | nasm]]
+# [-L] [--lang [as | c | nasm | aarch64 | riscv64]]
 # [-p] [--proto <prototype>]
 #      [--defs]
 # [-v] [--verbose]
@@ -417,7 +507,7 @@ aonew() {
 			shift
 			PROTO="$1"
 			if [ -z "$1" ] || [[ "$1" = -* ]]; then
-				aoeexit 1 "--proto should not start with '-' or be empty!"
+				aoeexit $OPC_CMD "--proto should not start with '-' or be empty!"
 			fi
 			;;
 		"--defs" )
@@ -427,7 +517,7 @@ aonew() {
 			locked "$VERBOSE" "--verbose should be used only once!"
 			VERBOSE="v"
 			;;
-		* ) aoeexit 1 "$AOHELP"
+		* ) aoeexit $OPC_CMD "$AOHELP"
 		esac
 	done
 	LANG=${LANG:-"as"}
@@ -464,7 +554,7 @@ aonew() {
 	printf "\n" >> "$TEST"
 	if [ -n "$PROTO" ]; then
 		PROTONAME=$(printf "$PROTO" | grep -Po '(\w+) *\(' | grep -Po '\w+')
-    fi
+	fi
 	if [ -n "$PROTONAME" ]; then
 		printf "extern %s;\n\n" "$PROTO" >> "$TEST"
 	fi
@@ -523,7 +613,7 @@ EOF
 		* ) LINE=$(($LINENO-1))
 			IMPL=$(printf "\n\n\"$PLATFORM\" )\n    SOLUTION=\"\$DIR/solution-$PLATFORM.s\"\n    ;;\n\n")
 			AOMSG=$(printf "unsupported platform! Go to the line $LINE and add the following to support it")
-			aoeexit 1 "$AOMSG:$IMPL"
+			aoeexit $OPC_CMD "$AOMSG:$IMPL"
 		esac
 		touch "$SOLUTION"
 		aonote "$SOLUTION" "/*" " *" " */"
@@ -533,6 +623,20 @@ EOF
 		SOLUTION="$DIR/solution-nasm.s"
 		touch "$SOLUTION"
 		aonote "$SOLUTION" ";" "; " ";"
+	;;
+	"aarch64" )
+		proto_on_request=proto_aarch64
+		SOLUTION="$DIR/solution-aarch64.s"
+		touch "$SOLUTION"
+		aonote "$SOLUTION" "/*" " * " " */"
+		printf "\n" >> "$SOLUTION"
+	;;
+	"riscv64" )
+		proto_on_request=proto_riscv64
+		SOLUTION="$DIR/solution-riscv64.s"
+		touch "$SOLUTION"
+		aonote "$SOLUTION" "/*" " * " " */"
+		printf "\n" >> "$SOLUTION"
 	;;
 	esac
 	$proto_on_request
@@ -558,7 +662,7 @@ yesno() {
 		if [ "$2" != "" ]; then
 			printf "$2\n"
 		fi
-		exit 1
+		exit $OPC_CMD
 	fi
 }
 
@@ -570,13 +674,13 @@ isof() {
 			return 0
 		fi
 	done
-	aoeexit 1 "$3"
+	aoeexit $OPC_CMD "$3"
 }
 
 locked() {
 	WHAT="$1"
 	if [ -n "$WHAT" ]; then
-		aoeexit 1 "$2"
+		aoeexit $OPC_CMD "$2"
 	fi
 }
 
@@ -592,39 +696,39 @@ proto_c() {
 	fi
 }
 
+typesig() {
+	printf "$PROTO" | sed "s/^[ \t]*\(.*[^ \t]\)[ \t]*$PROTONAME[ \t]*\(.*[^ \t]\)[ \t]*$/\2 -> \1/"
+}
+
 proto_nasm() {
 	if [ -n "$PROTONAME" ]; then
-		printf "global %s\n\n" "$PROTONAME" >> "$SOLUTION"
-		printf "; <-- %s -->\n" "$PROTO" >> "$SOLUTION"
-		printf "%s:\n\tret\n" "$PROTONAME" >> "$SOLUTION"
-		printf "; -----> endof %s <-----\n" "$PROTONAME" >> "$SOLUTION"
+		printf "global %s\n" "$PROTONAME" >> "$SOLUTION"
+		printf "$PROTONAME:; $(typesig)\n\tret\n" >> "$SOLUTION"
+		printf "; -----> endof $PROTONAME <-----\n" >> "$SOLUTION"
 	fi
 }
 
 proto_x86() {
 	if [ -n "$PROTONAME" ]; then
-		printf ".global %s\n\n" "$PROTONAME" >> "$SOLUTION"
-		printf "# <-- %s -->\n" "$PROTO"$ >> "$SOLUTION"
-		printf "%s:\n\tret\n" "$PROTONAME" >> "$SOLUTION"
-		printf "# -----> endof %s <-----\n" "$PROTONAME" >> "$SOLUTION"
+		printf ".global %s\n" "$PROTONAME" >> "$SOLUTION"
+		printf "%s:# $(typesig)\n\tret\n" >> "$SOLUTION"
+		printf "# -----> endof $PROTONAME <-----\n" >> "$SOLUTION"
 	fi
 }
 
 proto_aarch64() {
 	if [ -n "$PROTONAME" ]; then
-		printf ".global %s\n\n" "$PROTONAME" >> "$SOLUTION"
-		printf "# <-- %s -->\n" "$PROTO"$ >> "$SOLUTION"
-		printf "%s:\n\tret\n" "$PROTONAME" >> "$SOLUTION"
-		printf "# -----> endof %s <-----\n" "$PROTONAME" >> "$SOLUTION"
+		printf ".global %s\n" "$PROTONAME" >> "$SOLUTION"
+		printf "$PROTONAME:# $(typesig)\n\tret\n" >> "$SOLUTION"
+		printf "# -----> endof $PROTONAME <-----\n" >> "$SOLUTION"
 	fi
 }
 
 proto_riscv64() {
 	if [ -n "$PROTONAME" ]; then
 		printf ".global %s\n\n" "$PROTONAME" >> "$SOLUTION"
-		printf "# <-- %s -->\n" "$PROTO"$ >> "$SOLUTION"
-		printf "%s:\n\tret\n" "$PROTONAME" >> "$SOLUTION"
-		printf "# -----> endof %s <-----\n" "$PROTONAME" >> "$SOLUTION"
+		printf "$PROTONAME:# $(typesig)\n\tret\n" >> "$SOLUTION"
+		printf "# -----> endof $PROTONAME <-----\n" >> "$SOLUTION"
 	fi
 }
 
@@ -678,32 +782,33 @@ aocipher() {
             shift
             CIPHER="$2"
 			if [ -z "$CIPHER" ]; then
-				aoeexit 1 "<cipher> should be passed after the key"
+				aoeexit $OPC_CMD "<cipher> should be passed after the key"
 			fi
             ;;
-		* ) aoeexit 1 "$AOHELP"
+		* ) aoeexit $OPC_CMD "$AOHELP"
 		esac
 	done
 # checking whether openssl is available
 	VERSION=$(2>&1 openssl version)
 	opcode=$?
 	if [ $opcode -ne 0 ]; then
-		aoeexit 1 "openssl is not found"
+		aoeexit $OPC_CMD "openssl is not found"
 	fi
 	VERSION=$(printf "$VERSION" | grep -o '1.0.[0-9]\{1,\}')
 	if [ -n "$VERSION" ]; then
-		aoeexit 1 "upgrade openssl to version at least 1.1.1"
+		aoeexit $OPC_CMD "upgrade openssl to version at least 1.1.1"
 	fi
 # checking whether cipher does exist
 	if [ -n "${CIPHER}" ]; then
 		if ! openssl enc -list "${CIPHER}" | grep -o "${CIPHER}" &> /dev/null; then
-			aoeexit 1 "${CIPHER} is not supported by openssl"
+			aoeexit $OPC_CMD "${CIPHER} is not supported by openssl"
 		fi
 	else
 		CIPHER="aes-256-cbc"
 	fi
 	printf "$CIPHER"
 }
+
 
 # ao encrypt <file | dir> [--cipher cipher]
 #
@@ -714,19 +819,19 @@ aoencrypt() {
 	AOHELP="$AOHELP_ENCRYPT"
 # whether arguments are given
 	if [ $# -lt 2 ] || [[ "$ENC" = -* ]]; then
-		aoeexit 1 "$AOHELP"
+		aoeexit $OPC_CMD "$AOHELP"
 	fi
 # checking whether ao encrypt help is needed
     if [ "$2" = "help" ]; then
 		if [ $# -ne 2 ]; then
-	        aoeexit 1 "$AOHELP"
+	        aoeexit $OPC_CMD "$AOHELP"
 		else
 			aoexit "$AOHELP"
 		fi
     fi
 # checking existence
 	if [ ! -f "$ENC" ] && [ ! -d "$ENC" ]; then
-		aoeexit 1 "$ENC does not exist!"
+		aoeexit $OPC_FILE "$ENC does not exist"
 	fi
 	CIPHER=`aocipher "$@"`
 	opcode=$?
@@ -736,18 +841,18 @@ aoencrypt() {
 # encrypting
 	if [ -d "$ENC" ]; then
 		if ! command -v tar &> /dev/null; then
-			aoeexit 1 "tar is not found"
+			aoeexit $OPC_CMD "tar is not found"
 		fi
 		tar cf - "$ENC" | openssl enc -"$CIPHER" -e -pbkdf2 -out "$ENC.enc"
 		opcode=$?
 		if [ $opcode -ne 0 ]; then
-			aoeexit 1 "empty password"
+			aoeexit $OPC_CMD "empty password"
 		fi
 	else
 		openssl enc -"$CIPHER" -e -pbkdf2 -in "$ENC" -out "$ENC.enc"
 		opcode=$?
 		if [ $opcode -ne 0 ]; then
-			aoeexit 1 "empty password"
+			aoeexit $OPC_CMD "empty password"
 		fi
 	fi
 }
@@ -761,23 +866,23 @@ aodecrypt() {
 	AOHELP="$AOHELP_DECRYPT"
 # whether arguments are given
 	if [ $# -lt 2 ] || [[ "$DEC" = -* ]]; then
-		aoeexit 1 "$AOHELP"
+		aoeexit $OPC_CMD "$AOHELP"
 	fi
 # whether ao encrypt help is needed
     if [ "$DEC" = "help" ]; then
 		if [ $# -ne 2 ]; then
-	        aoeexit 1 "$AOHELP"
+	        aoeexit $OPC_CMD "$AOHELP"
 		else
 			aoexit "$AOHELP"
 		fi
     fi
 # whether the decryption element is .enc
 	if [[ "$DEC" != *.enc ]]; then
-		aoeexit 1 "$DEC is not .enc"
+		aoeexit $OPC_CMD "$DEC is not .enc"
 	fi
 # checking existence
 	if [ ! -f "$DEC" ]; then
-		aoeexit 1 "$DEC does not exist"
+		aoeexit $OPC_FILE "$DEC does not exist"
 	fi
 
 	DEC="${DEC%.enc}"
@@ -792,16 +897,16 @@ aodecrypt() {
 		exit $opcode
 	fi
 	if ! command -v tar &> /dev/null; then
-		aoeexit 1 "tar is not found"
+		aoeexit $OPC_CMD "tar is not found"
 	fi
 # decrypting
 	outp=$(2>&1 openssl enc -"$CIPHER" -d -pbkdf2 -in "$DEC.enc" -out ".$DEC")
 	opcode=$?
 	if printf "$outp" | grep -o "bad decrypt" &> /dev/null; then
-		aoeexit 1 "wrong password"
+		aoeexit $OPC_CMD "wrong password"
 	fi
 	if [ $opcode -ne 0 ]; then
-		aoeexit 1 "empty password"
+		aoeexit $OPC_CMD "empty password"
 	fi
 
 	if ! tar xf ".$DEC" &> /dev/null; then
