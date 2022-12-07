@@ -5,16 +5,17 @@
 #              Nov 27, 2022
 #
 
-AO_VERSION="Assert Operator (debug-0.1.0)"
+AO_VERSION="Assert Operator (debug-0.1.1)"
 
-LANGS="as c nasm"
+LANGS="as c nasm aarch64 riscv64"
+TARGETS="x86_64 aarch64 riscv64"
 
 AOHELP_NEW="ao new [project-name] [--verbose] [--lang language] [--proto prototype] [--defs]"
-AOHELP_BUILD="ao build [--verbose] [--lang language] [--lib library] [--xflags flags]"
+AOHELP_BUILD="ao build [--verbose] [--lang language] [--lib library] [--xflags flags] [--target target]"
 AOHELP_ENCRYPT="ao encrypt <file | dir> [--cipher cipher]"
 AOHELP_DECRYPT="ao decrypt <file | dir> [--cipher cipher]"
 AOHELP_NOTE="ao note <file> \"opener\" \"center\" \"closer\""
-AOHELP_SETUP="ao setup [--verbose]"
+AOHELP_SETUP="ao setup [--verbose] [--target target]"
 
 ao() {
 	AO_SETUP=${AO_SETUP:-"$HOME/.ao"}
@@ -76,9 +77,10 @@ aohelp() {
 	printf "\ntype \"ao [command] help\" for more information about a command\n"
 }
 
-# aosetup [--verbose]
+# aosetup [--verbose] [--target target]
 #
 # [-v] [--verbose]
+#      [--target target]
 
 aosetup() {
 	AOHELP="$AOHELP_SETUP"
@@ -95,6 +97,12 @@ aosetup() {
 			locked "$VERBOSE" "--verbose should be used only once!"
 			VERBOSE="v"
 			;;
+		"--target" )
+			locked "$TARGET" "--target should be used only once!"
+			shift
+			TARGET="$1"
+			isof "$TARGET" "$TARGETS" "should use one of [$TARGETS] targets!"
+			;;
 		* ) aoeexit 1 "$AOHELP"
 		esac
 	done
@@ -108,7 +116,7 @@ aosetup() {
 		verbose "mkdir -p $AO_SETUP"
 	fi
 # compiling, cleaning and installing libaop.so
-	CC=${CC:-"gcc"}
+	set_cc
 	CFLAGS="-O2 -g -DDEBUG -I./src -fPIC -c"
 	for c in src/ao/*.c; do
 		verbose "${CC} ${CFLAGS} $c"
@@ -121,12 +129,12 @@ aosetup() {
 	verbose "${CC} -shared -o libaop.so *.o"
 	rm -f *.o
 	verbose "rm -f *.o"
-	if [ ! -d $AO_LIB ]; then
-		mkdir -p "$AO_LIB"
-		verbose "mkdir -p $AO_LIB"
+	if [ ! -d $AO_LIB/$TARGET ]; then
+		mkdir -p "$AO_LIB/$TARGET"
+		verbose "mkdir -p $AO_LIB/$TARGET"
 	fi
-	mv libaop.so "$AO_LIB/"
-	verbose "mv libaop.so $AO_LIB/"
+	mv libaop.so "$AO_LIB/$TARGET/"
+	verbose "mv libaop.so $AO_LIB/$TARGET/"
 # installing ao headers
 	if [ ! -d $AO_INCLUDE/ao ]; then
 		mkdir -p $AO_INCLUDE/ao
@@ -148,14 +156,15 @@ aosetup() {
 	ln -s $AO_SETUP/ao.sh $HOME/bin/ao
 	verbose "ln -s $AO_SETUP/ao.sh $HOME/bin/ao"
 echo "finished"
-    printf "\nremember to edit '$AO_SETUP/lib' path to 'LD_LIBRARY_PATH' variable\n"
+	printf "\nremember to edit '$AO_SETUP/lib/$TARGET' path to 'LD_LIBRARY_PATH' variable\n"
 }
 
-# ao build [--lang language] [--lib library] [--xflags flags] [--verbose]
+# ao build [--lang language] [--lib library] [--xflags flags] [--target target] [--verbose]
 #
-# [-L] [--lang [as | c | nasm]]
+# [-L] [--lang [as | c | nasm | aarch64 | riscv64]]
 # [-l] [--lib <library>]
 # [-x] [--xflags <flags>]
+#      [--target <target>]
 # [-v] [--verbose]
 
 aobuild() {
@@ -204,6 +213,12 @@ aobuild() {
 		"-v" | "--verbose" )
 			locked "$VERBOSE" "--verbose should be used only once!"
 			VERBOSE="v"
+			;;
+		"--target" )
+			locked "$TARGET" "--target should be used only once!"
+			shift
+			TARGET="$1"
+			isof "$TARGET" "$TARGETS" "should use one of [$TARGETS] targets!"
 			;;
 		* ) aoeexit 1 "$AOHELP"
 		esac
@@ -323,6 +338,13 @@ aobuild() {
 	printf "\treturn aop;\n}\n" >> "$MAIN"
 
 # assembling the appropriate solution
+	set_target
+	set_cc
+	if [ $PLATFORM = $TARGET ]; then
+		EXEC="test"
+	else
+		EXEC="$TARGET-test"
+	fi
 	case "$LANG" in
 	"c" )
 		SOLUTION="solution.c"
@@ -331,8 +353,8 @@ aobuild() {
 		fi
 		;;
 	"as" )
-	# native assembly
-		case "$PLATFORM" in
+	# detecting as
+		case "$TARGET" in
 		"x86_64" )
 			SOLUTION="solution-x86_64.s"
 			;;
@@ -351,7 +373,7 @@ aobuild() {
 			aoeexit 1 "$AOMSG:$IMPL"
 		esac
 		if [ -f "$SOLUTION" ]; then
-			$AS $XFLAGS "$SOLUTION" -o "$SOLUTION".o
+			$CC $CFLAGS $XFLAGS -c "$SOLUTION" -o "$SOLUTION".o
 		fi
 		;;
 	"nasm" )
@@ -360,17 +382,24 @@ aobuild() {
 			nasm -f elf64 $XFLAGS "$SOLUTION" -o "$SOLUTION".o
 		fi
 		;;
+	# guest assembly
+	"riscv64" | "aarch64" )
+		SOLUTION="solution-""$LANG"".s"
+		if [ -f "$SOLUTION" ]; then
+			$CC $CFLAGS $XFLAGS -c "$SOLUTION" -o "$SOLUTION".o
+		fi
+		;;
 	esac
 	opcode=$?
 	if [ $opcode -ne 0 ]; then
 		exit 1
 	fi
 	if [ -f "$SOLUTION".o ]; then
-		$CC $CFLAGS "$MAIN" "$SOLUTION".o -I $AO_INCLUDE -L $AO_LIB $LIBS -o "$EXEC"
+		$CC $CFLAGS "$MAIN" "$SOLUTION".o -I $AO_INCLUDE -L $AO_LIB/$TARGET $LIBS -o "$EXEC"
 		opcode=$?
 		rm -f "$SOLUTION".o
 	else
-		$CC $CFLAGS "$MAIN" "$SOLUTION".o -I $AO_INCLUDE -L $AO_LIB $LIBS -o "$EXEC"
+		$CC $CFLAGS "$MAIN" -I $AO_INCLUDE -L $AO_LIB/$TARGET $LIBS -o "$EXEC"
 		opcode=$?
 	fi
 	if [ $opcode -ne 0 ]; then
@@ -379,9 +408,64 @@ aobuild() {
 echo "done"
 }
 
+set_target() {
+	if [ -z $TARGET ]; then
+		case $LANG in
+		"as" | "c" )
+			TARGET=$PLATFORM
+			;;
+		"nasm" )
+			TARGET="x86_64"
+			;;
+		"aarch64" | "riscv64" )
+			TARGET=$LANG
+			;;
+		esac
+	else
+		case $TARGET in
+		"x86_64" )
+			case $LANG in
+			"aarch64" | "riscv64" )
+				aoeexit  5 "wrong target x86_64 for lang $LANG"
+				;;
+			esac
+		;;
+		"aarch64" )
+			case $LANG in
+			"nasm" | "riscv64" )
+				aoeexit 5 "wrong target aarch64 for lang $LANG"
+				;;
+			esac
+		;;
+		"riscv64" )
+			case $LANG in
+			"nasm" | "aarch64" )
+				aoeexit 5 "wrong target riscv64 for lang $LANG"
+				;;
+			esac
+		;;
+		esac
+	fi
+}
+
+set_cc() {
+	if [ -z $TARGET ]; then
+		TARGET=$PLATFORM
+	fi
+	if [ "$TARGET" = "$PLATFORM" ]; then
+		CC="gcc"
+	else
+		CC="${TARGET^^}_CC"
+		if [ -z "${!CC}" ]; then
+			aoeexit 3 "export $CC=$TARGET-your-cc-compiler to set a compiler"
+		fi
+		CC="${!CC}"
+	fi
+}
+
 # ao new [project-name] [--lang language] [--proto prototype] [--defs] [--verbose]
 #
-# [-L] [--lang [as | c | nasm]]
+# [-L] [--lang [as | c | nasm | aarch64 | riscv64]]
 # [-p] [--proto <prototype>]
 #      [--defs]
 # [-v] [--verbose]
@@ -464,7 +548,7 @@ aonew() {
 	printf "\n" >> "$TEST"
 	if [ -n "$PROTO" ]; then
 		PROTONAME=$(printf "$PROTO" | grep -Po '(\w+) *\(' | grep -Po '\w+')
-    fi
+	fi
 	if [ -n "$PROTONAME" ]; then
 		printf "extern %s;\n\n" "$PROTO" >> "$TEST"
 	fi
@@ -533,6 +617,20 @@ EOF
 		SOLUTION="$DIR/solution-nasm.s"
 		touch "$SOLUTION"
 		aonote "$SOLUTION" ";" "; " ";"
+	;;
+	"aarch64" )
+		proto_on_request=proto_aarch64
+		SOLUTION="$DIR/solution-aarch64.s"
+		touch "$SOLUTION"
+		aonote "$SOLUTION" "/*" " * " " */"
+		printf "\n" >> "$SOLUTION"
+	;;
+	"riscv64" )
+		proto_on_request=proto_riscv64
+		SOLUTION="$DIR/solution-riscv64.s"
+		touch "$SOLUTION"
+		aonote "$SOLUTION" "/*" " * " " */"
+		printf "\n" >> "$SOLUTION"
 	;;
 	esac
 	$proto_on_request
@@ -622,7 +720,7 @@ proto_aarch64() {
 proto_riscv64() {
 	if [ -n "$PROTONAME" ]; then
 		printf ".global %s\n\n" "$PROTONAME" >> "$SOLUTION"
-		printf "# <-- %s -->\n" "$PROTO"$ >> "$SOLUTION"
+		printf "# <-- %s -->\n" "$PROTO" >> "$SOLUTION"
 		printf "%s:\n\tret\n" "$PROTONAME" >> "$SOLUTION"
 		printf "# -----> endof %s <-----\n" "$PROTONAME" >> "$SOLUTION"
 	fi
@@ -704,6 +802,7 @@ aocipher() {
 	fi
 	printf "$CIPHER"
 }
+
 
 # ao encrypt <file | dir> [--cipher cipher]
 #
